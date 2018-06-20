@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "KeyDispenser", "KeyDispenser\KeyDispenser.pyproj", "{2C854A34-0C44-48F2-937B-CB072FCBAFF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2C854A34-0C44-48F2-937B-CB072FCBAFF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C854A34-0C44-48F2-937B-CB072FCBAFF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {29AF6D94-4EED-4C96-BCBD-6548D7A78D87}
+	EndGlobalSection
+EndGlobal
