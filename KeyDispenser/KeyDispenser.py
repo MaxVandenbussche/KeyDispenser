@@ -16,7 +16,7 @@ white = (255,255,255)
 clock = pygame.time.Clock()
 done = False
 # Images used in the program
-img_logo = pygame.image.load('Logo.png')
+img_logo = pygame.image.load('logo.png')
 
 
 class c_language:
@@ -36,6 +36,7 @@ def button(x, y, img, action_arg, action=None):
 
 def chooseLanguage(lang):
     print(lang.name)
+    currentLanguage = lang
 
 def showLanguageOptions():
     x = display_width
@@ -47,13 +48,15 @@ def showLanguageOptions():
 
 def screen_welcome():
     x = (display_width / 2)- img_logo.get_size()[0]/2
-    y = (display_height /2)- img_logo.get_size()[1]/2
+    #y = (display_height /2)- img_logo.get_size()[1]/2
+    y = 10
     gameDisplay.blit(img_logo, (x,y))
     showLanguageOptions()
 
 
 
 availableLanguages = [c_language('nl'), c_language('fr'), c_language('gb')]
+currentLanguage = availableLanguages[0]
 
 while not done:
     for event in pygame.event.get():
@@ -63,7 +66,7 @@ while not done:
     gameDisplay.fill(black)
     screen_welcome()
     pygame.display.update()
-    clock.tick(15)
+    clock.tick(10)
 
 pygame.quit()
 quit()
