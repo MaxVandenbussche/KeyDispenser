@@ -1,12 +1,15 @@
 import pygame
 import datetime
 from time import sleep
+import os
 
 pygame.init()
 
 
 display_width = 1024
 display_height = 600
+
+numberOfRooms = 12
 
 gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption('Key Check-in')
@@ -136,6 +139,7 @@ class c_textButton:
         gameDisplay.blit(textSurf, textRect)
 
     def checkClick(self, mouse):
+        if self.action is None: return
         if self.x + self.w > mouse[0] > self.x and self.y + self.h > mouse[1] > self.y:
             if(self.action_arg != None):
                 self.action(self.action_arg)
@@ -172,6 +176,16 @@ class c_screen:
     def showLanguageOptions(self):
         for btn in self.langBtns:
             btn.show()
+
+    def showBtns(self):
+        for button in self.screenButtons:
+            #print(type(button))
+            if(type(button) is type([])):
+                for subButton in button :
+                    if(hasattr(subButton, 'show')):
+                        subButton.show()
+            elif(hasattr(button, 'show')):
+                button.show()
 
     def checkbuttons(self):
         mouse = pygame.mouse.get_pos()
@@ -390,35 +404,118 @@ class c_login(c_screen):
                 print("invalid key!")
         self.keyboard.currentText = ""
 
+class c_textInput(c_screen):
+    def __init__(self,code = None):
+        super().__init__()
+        self.room = None
+        self.codeToCheck = code
+        self.authenticated = False
+        self.done = False
+        self.CustomMessage = None
+        self.btn_back = c_imageButton(0, display_height - img_back.get_size()[0], img_back, self.goBack)
+        self.btn_go = c_textButton("Change", 800, 400, 150,50, blue, self.checkInput)
+        self.keyboard = c_keyboard("qwerty")
+        self.screenButtons.append(self.btn_back)
+        self.screenButtons.append(self.btn_go)
+        self.screenButtons.append(self.keyboard)
+
+    def putStuffOnScreen(self):
+        global languageHasChanged
+        if languageHasChanged:
+            self.screenButtons.remove(self.keyboard)
+            self.keyboard = c_keyboard(currentLanguage.layout)
+            self.screenButtons.append(self.keyboard)
+            languageHasChanged = False
+        if(self.CustomMessage is None):
+            self.btn_go.msg = translations['retrieveKey'][currentLanguage.name]
+        else:
+            self.btn_go.msg = self.CustomMessage
+        self.showLanguageOptions()        
+        self.keyboard.show()
+        if self.CustomMessage is None:
+            message = translations['enterPass'][currentLanguage.name]
+        else:
+            message = self.CustomMessage
+        showText(message, smallText, display_width/2, 25)
+        self.btn_back.show()
+        if len(self.keyboard.currentText) > 0:
+            self.btn_go.show()
+        showText(self.keyboard.currentText, smallText, display_width/2, 400)
+    
+
+    def checkInput(self):
+        if self.codeToCheck is type([]):
+            if self.keyboard.currentText in self.codeToCheck:
+                self.room = self.codeToCheck[self.keyboard.currentText]
+                print("Passcode given for room: " + str(self.room))
+                self.done = True
+            else:
+                showText(translations['invalidKey'][currentLanguage.name],smallText, display_width/2, 500)
+                pygame.display.update()
+                sleep(2)
+                print("invalid key!")
+            self.keyboard.currentText = ""
+        elif self.codeToCheck is type(""):
+            if self.keyboard.currentText == self.codeToCheck:
+                self.authenticated = True
+                self.done = True
+            else:
+                self.keyboard.currentText = ""
+                showText("verkeerde code",smallText, display_width/2, 500)
+                pygame.display.update()
+                sleep(2)
+                print("invalid key!")
+        #self.keyboard.currentText = ""
+        self.done = True
+        
 class c_screen_reservations(c_screen):
     def __init__(self):
-        self.x_offset = 25
+        self.x_BtnOffset = 300  # This is the offset from the text to the button. In other words: the maximun txt length
+        self.x_textOffset = 25
         self.y_offset = 25
         self.spacing = 75
         self.x_spacing = 100
+        self.textInput = c_textInput()
+        self.textInput.CustomMessage = "Change"
         super().__init__()
         self.btn_back = c_imageButton(0, display_height - img_back.get_size()[0], img_back, self.goBack)
-        super().screenButtons += self.btn_back
-        for room in range(0, 6):
-            x = self.x_offset
-            y = self.y_offset + self.spacing * room
-            super().screenButtons.append(c_textButton("change", x, y))
+        self.screenButtons.append(self.btn_back)
+        for room in range(0, numberOfRooms):
+            #First column
+            if(room < numberOfRooms/2):
+                x = self.x_textOffset + self.x_BtnOffset
+                y = self.y_offset + self.spacing * room
+            else:
+                x = (display_width/2) + self.x_textOffset + self.x_BtnOffset
+                y = self.y_offset + self.spacing*(room-(numberOfRooms/2))
+            self.screenButtons.append(c_textButton("change", x, y, 120, 20, blue, self.changeRoom, room))
 
     def putStuffOnScreen(self):
+        self.showBtns()
         self.showRooms()
 
     def showRooms(self):
         global ActiveReservations
-        for index in range(0,6):
-            textToShow = 'Kamer '+ str(index + 1)
+        for room in range(0,numberOfRooms):
+            textToShow = 'Kamer '+ str(room + 1)
             textToShow += ':    '
-            if ActiveReservations[index+1] is None:
-                 textToShow +=  '-'
+            if ActiveReservations[room+1] is None:
+                textToShow +=  '-'
             else:
-                textToShow += str(ActiveReservations[index+1])
-            
-            showText(textToShow, smallText, 100, 25+index * self.spacing, 0)
+                textToShow += str(ActiveReservations[room+1])
+            if(room < numberOfRooms/2):
+                x = self.x_textOffset
+                y = self.y_offset + self.spacing * room
+            else:
+                x = (display_width/2) + self.x_textOffset
+                y = self.y_offset + self.spacing*(room-(numberOfRooms/2))
+            #showText(textToShow, smallText, 100, 25+room * self.spacing, 0)
+            showText(textToShow, smallText,x, y, 0)
 
+    def changeRoom(self, roomNr):
+        global ActiveReservations
+        self.textInput.show()
+        ActiveReservations[roomNr+1] = str(self.textInput.keyboard.currentText)
 
 
 def showText(text,font, x, y, allignment = 1):
@@ -440,16 +537,18 @@ def chooseLanguage(lang):
     global languageHasChanged
     languageHasChanged = True
 
+#def saveSettings():
+
 
 availableLanguages = [c_language('nl', 'azerty'), c_language('fr', 'azerty'), c_language('gb', 'qwerty')]
-#currentLanguage = availableLanguages[0]
+currentLanguage = availableLanguages[0]
 languageHasChanged = False
 
-#mainScreen = c_screen_main()
-#settingsScreen = c_screen_settings()
-#mainScreen.show()
+mainScreen = c_screen_main()
+settingsScreen = c_screen_settings()
+mainScreen.show()
 langPointer = 0
-"""while True:
+while True:
     print("STARTING")
     langPointer += 1
     if langPointer >= len(availableLanguages):
@@ -457,8 +556,5 @@ langPointer = 0
     currentLanguage = availableLanguages[langPointer]
     test = c_screen_main()
     test.show()
-"""
-test = c_screen_reservations()
-test.show()
 pygame.quit()
 quit()
